@@ -27,7 +27,7 @@ export default class Main extends React.Component {
       email: "",
       password: "",
       authUser: null,
-      currentTab: "skills"
+      currentTab: "items"
     };
   }
 
@@ -50,6 +50,7 @@ export default class Main extends React.Component {
     let item = items[id];
     let subtypes = [...item.subtypes];
     let q = 0;
+    item.varietyType = item.baseVarietyType || parent.varietyType || null;
     for (let child of subtypes) {
       q = Math.max(q, this.setTraitsRecursively(items, child, item) + 1);
     }
@@ -63,12 +64,15 @@ export default class Main extends React.Component {
   deriveTraits = () => {
     var alchemyItems = [];
     var items = GetCollection("items");
+    var beginningSnapshot = {};
+
     let baseItem = "Payc5snfnDmOqQTeJ502";
     for (var i in items) {
       if (
         (items[i].is !== undefined && items[i].is.length > 0) ||
         i == baseItem
       ) {
+        beginningSnapshot[i] = JSON.stringify(items[i]);
         items[i].subtypes = [];
         items[i].id = i;
         items[i].minq = -1;
@@ -92,6 +96,9 @@ export default class Main extends React.Component {
     }
 
     for (var item of alchemyItems) {
+      if (beginningSnapshot[item.id] == JSON.stringify(items[item.id])) {
+        continue;
+      }
       app
         .firestore()
         .collection("items")
@@ -100,7 +107,8 @@ export default class Main extends React.Component {
           {
             minq: item.minq,
             isAlchemical: true,
-            subtypes: item.subtypes
+            subtypes: item.subtypes,
+            varietyType: item.varietyType
           },
           { merge: true }
         );

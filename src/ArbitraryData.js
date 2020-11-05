@@ -392,7 +392,7 @@ export default class ArbitraryData extends React.Component {
       return;
     }
     let level = Math.log10(items[id].minq + 1);
-    let offset = (5 - level) * 150;
+    let offset = level * 150;
     let depth = Math.round(level * 5) - 100;
     if (depth == NaN) {
       console.log(items[id].name);
@@ -406,20 +406,22 @@ export default class ArbitraryData extends React.Component {
         : "");
     let collapsed = this.state.collapsed[id] == true;
     return (
-      <div style={{ display: "flex" }}>
-        <div style={{ width: 0, display: "flex" }}>
+      <div style={{ display: "flex", flexDirection: "row-reverse" }}>
+        <div
+          style={{ width: 0, display: "flex", flexDirection: "row-reverse" }}
+        >
           <div
             style={{
               display: "flex",
               position: "relative",
-              left: offset + "px"
+              right: offset + "px"
             }}
           >
             <div
               style={{
                 position: "absolute",
-                width: offset + "px",
-                marginLeft: 4 - offset + "px",
+                width: "1000px",
+                marginLeft: "-990px",
                 height: "100%",
                 backgroundColor: "white",
                 alignSelf: "center",
@@ -429,8 +431,8 @@ export default class ArbitraryData extends React.Component {
             <div
               style={{
                 position: "absolute",
-                width: offset + "px",
-                marginLeft: 4 - offset + "px",
+                width: "1000px",
+                marginLeft: "-990px",
                 height: "2px",
                 backgroundColor: "black",
                 alignSelf: "center",

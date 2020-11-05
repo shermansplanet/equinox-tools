@@ -51,7 +51,7 @@ export const templates = {
     decay: "?decay",
     is: "!items array",
     hidden: "?bool",
-    varietyType: "?!items",
+    baseVarietyType: "?!items",
     baseTraits: "string string dict",
     minq: "display"
   },
