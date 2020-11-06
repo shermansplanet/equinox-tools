@@ -27,7 +27,7 @@ export default class Main extends React.Component {
       email: "",
       password: "",
       authUser: null,
-      currentTab: "items"
+      currentTab: "skills"
     };
   }
 
@@ -46,11 +46,95 @@ export default class Main extends React.Component {
     this.auth.signInWithEmailAndPassword(this.state.email, this.state.password);
   };
 
+  getAllChildren = (skills, id) => {
+    let skill = skills[id];
+    let children = [...skill.children];
+    for (let child of skill.children) {
+      children.push(...this.getAllChildren(skills, child));
+    }
+    return children;
+  };
+
+  updateSkillsFromItems = items => {
+    console.log("UPDATING");
+    let skills = GetCollection("skills");
+    let beginningSnapshot = {};
+
+    for (let i in skills) {
+      skills[i].children = [];
+    }
+
+    for (let i in skills) {
+      for (let parent of skills[i].parents) {
+        skills[parent].children.push(i);
+      }
+    }
+
+    let toDelete = [];
+    for (let i in skills) {
+      let skill = skills[i];
+      if (skill.itemLink) {
+        for (let child of this.getAllChildren(skills, i)) {
+          toDelete.push(child);
+          app
+            .firestore()
+            .collection("skills")
+            .doc(child)
+            .delete();
+        }
+      }
+    }
+    for (id of toDelete) {
+      delete skills[id];
+    }
+
+    for (let i in skills) {
+      let skill = skills[i];
+
+      let newParents = [];
+      for (parent of skill.parents) {
+        if (skills[parent] !== undefined) {
+          newParents.push(parent);
+        }
+      }
+      skill.parents = newParents;
+
+      let newChildren = [];
+      for (child of skill.children) {
+        if (skills[child] !== undefined) {
+          newChildren.push(child);
+        }
+      }
+      skill.children = newChildren;
+    }
+
+    for (let i in skills) {
+      let skill = skills[i];
+      app
+        .firestore()
+        .collection("skills")
+        .doc(i)
+        .set(
+          {
+            children: skill.children,
+            parents: skill.parents
+          },
+          { merge: true }
+        );
+    }
+  };
+
   setTraitsRecursively = (items, id, parent = {}) => {
     let item = items[id];
     let subtypes = [...item.subtypes];
     let q = 0;
     item.varietyType = item.baseVarietyType || parent.varietyType || null;
+    for (let i in parent.traits || {}) {
+      item.traits[i] = parent.traits[i];
+    }
+    for (let i in item.baseTraits || {}) {
+      item.traits[i] = item.baseTraits[i];
+    }
     for (let child of subtypes) {
       q = Math.max(q, this.setTraitsRecursively(items, child, item) + 1);
     }
@@ -64,19 +148,18 @@ export default class Main extends React.Component {
   deriveTraits = () => {
     var alchemyItems = [];
     var items = GetCollection("items");
-    var beginningSnapshot = {};
+    let beginningSnapshot = {};
 
     let baseItem = "Payc5snfnDmOqQTeJ502";
     for (var i in items) {
-      if (
-        (items[i].is !== undefined && items[i].is.length > 0) ||
-        i == baseItem
-      ) {
-        beginningSnapshot[i] = JSON.stringify(items[i]);
-        items[i].subtypes = [];
-        items[i].id = i;
-        items[i].minq = -1;
-        alchemyItems.push(items[i]);
+      let item = items[i];
+      if ((item.is !== undefined && item.is.length > 0) || i == baseItem) {
+        beginningSnapshot[i] = JSON.stringify(item);
+        item.subtypes = [];
+        item.id = i;
+        item.minq = -1;
+        item.traits = {};
+        alchemyItems.push(item);
       }
     }
     for (var item of alchemyItems) {
@@ -95,6 +178,8 @@ export default class Main extends React.Component {
       item.minq = Math.ceil(Math.pow(10, (item.minq * maxq) / baseq)) - 1;
     }
 
+    this.updateSkillsFromItems(items);
+
     for (var item of alchemyItems) {
       if (beginningSnapshot[item.id] == JSON.stringify(items[item.id])) {
         continue;
@@ -108,7 +193,8 @@ export default class Main extends React.Component {
             minq: item.minq,
             isAlchemical: true,
             subtypes: item.subtypes,
-            varietyType: item.varietyType
+            varietyType: item.varietyType,
+            traits: item.traits
           },
           { merge: true }
         );

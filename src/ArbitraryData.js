@@ -79,8 +79,9 @@ export default class ArbitraryData extends React.Component {
                 ...dataPath.splice(0, dataPath.length - 1),
                 c
               ];
-              obj[c] = obj[path];
+              let old = obj[path];
               delete obj[path];
+              obj[c] = old;
             } else {
               obj[path] = c;
             }
@@ -175,7 +176,7 @@ export default class ArbitraryData extends React.Component {
             <button
               onClick={() => {
                 if (data == null) {
-                  this.setStatePath([this.genDefaultData(dt1)], dataPath);
+                  this.setStatePath({}, dataPath);
                 } else {
                   this.setStatePath(this.genDefaultData(dt2), [
                     ...dataPath,
@@ -291,7 +292,7 @@ export default class ArbitraryData extends React.Component {
 
   renderData = () => {
     var data = GetCollection(this.props.datatype);
-    if (this.props.datatype == "skills") {
+    if (false && this.props.datatype == "skills") {
       return (
         <SkillDisplay
           skills={data}
@@ -550,6 +551,7 @@ export default class ArbitraryData extends React.Component {
           {this.props.datatype === "actions" ? this.renderActionRec() : null}
         </b>
         <div>{this.state.id}</div>
+        <div>{JSON.stringify(this.state.data)}</div>
         <br />
         <div>
           {this.state.id === null ? (
