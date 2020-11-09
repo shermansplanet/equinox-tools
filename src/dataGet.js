@@ -37,7 +37,6 @@ export function Init() {
             collectionList["items"]["checkpoint_" + action.checkpoint] = {};
           }
         }
-        collectionList["locations"]["home"] = {};
         for (var cb of callbacks) {
           cb();
         }

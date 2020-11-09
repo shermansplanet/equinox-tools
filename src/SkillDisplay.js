@@ -76,6 +76,7 @@ export default class SkillDisplay extends React.Component {
   setDepthsRecursive = (depths, id, depth) => {
     depths[id] = depth;
     var skill = this.props.skills[id];
+    if (skill == undefined) return depths;
     for (var c of skill.children || []) {
       depths = this.setDepthsRecursive(depths, c, depth + 1);
     }
@@ -93,6 +94,18 @@ export default class SkillDisplay extends React.Component {
         depths = this.setDepthsRecursive(depths, id, 0);
       }
     }
-    return <div>{roots.map(val => this.renderSkillTree(val, depths))}</div>;
+    return (
+      <div>
+        {roots.map(val => {
+          let renderedTree = null;
+          try {
+            renderedTree = this.renderSkillTree(val, depths);
+          } catch (e) {
+            console.log(e);
+          }
+          return renderedTree;
+        })}
+      </div>
+    );
   }
 }

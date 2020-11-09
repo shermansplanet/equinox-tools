@@ -8,7 +8,8 @@ export const templates = {
     name: "string",
     text: "longstring",
     actions: "!actions array",
-    cardset: "?!locations"
+    cardset: "?!locations",
+    items: "!items array"
   },
   actions: {
     name: "string",
@@ -45,15 +46,22 @@ export const templates = {
   },
   items: {
     name: "string",
+    pluralOverride: "?string",
     skill_coeffs: "!skills number dict",
     value: "?number",
     category: "?string",
     decay: "?decay",
     is: "!items array",
     hidden: "?bool",
+    immobile: "?bool",
     baseVarietyType: "?!items",
     baseTraits: "string string dict",
+    baseDefaultStates: "state array",
     minq: "display"
+  },
+  state: {
+    name: "string",
+    defaultValues: "string array"
   },
   decay: {
     minutes: "number",

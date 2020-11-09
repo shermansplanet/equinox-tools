@@ -2,7 +2,6 @@ import React from "react";
 import app from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import SkillTools from "./SkillTools";
 import ArbitraryData from "./ArbitraryData";
 import { Init, GetCollection } from "./dataGet";
 
@@ -27,7 +26,7 @@ export default class Main extends React.Component {
       email: "",
       password: "",
       authUser: null,
-      currentTab: "skills"
+      currentTab: "items"
     };
   }
 
@@ -55,85 +54,128 @@ export default class Main extends React.Component {
     return children;
   };
 
+  linkToItem = (itemId, skillId, items, skills) => {
+    for (let i of items[itemId].subtypes) {
+      let newId = i + "_skill";
+      if (!skills[skillId].children.includes(newId)) {
+        skills[skillId].children.push(newId);
+      }
+      let parents = [skillId];
+      if (skills[newId] !== undefined) {
+        for (let i of skills[newId].parents) {
+          if (i !== skillId) {
+            parents.push(i);
+          }
+        }
+      }
+      skills[newId] = {
+        name: items[i].plural,
+        parents,
+        children: []
+      };
+      this.linkToItem(i, newId, items, skills);
+    }
+  };
+
+  updateSkillLabels = (skills, id, parentLabel) => {
+    let skill = skills[id];
+    if (skill.label == undefined) {
+      skill.label = parentLabel;
+    } else if (skill.label != parentLabel) {
+      skill.label = "skill";
+    }
+    for (let child of skill.children) {
+      this.updateSkillLabels(skills, child, skill.label);
+    }
+  };
+
   updateSkillsFromItems = items => {
-    console.log("UPDATING");
     let skills = GetCollection("skills");
     let beginningSnapshot = {};
 
-    for (let i in skills) {
-      skills[i].children = [];
-    }
+    let rootSkills = [];
 
     for (let i in skills) {
-      for (let parent of skills[i].parents) {
-        skills[parent].children.push(i);
+      beginningSnapshot[i] = JSON.stringify(skills[i]);
+      skills[i].children = [];
+      skills[i].label = undefined;
+      if (skills[i].parents.length == 0) {
+        rootSkills.push(i);
       }
     }
 
-    let toDelete = [];
+    for (let i in skills) {
+      let newParents = [];
+      for (let parent of skills[i].parents) {
+        if (skills[parent] == undefined) {
+          continue;
+        }
+        newParents.push(parent);
+        skills[parent].children.push(i);
+      }
+      skills[i].parents = newParents;
+    }
+
     for (let i in skills) {
       let skill = skills[i];
       if (skill.itemLink) {
-        for (let child of this.getAllChildren(skills, i)) {
-          toDelete.push(child);
-          app
-            .firestore()
-            .collection("skills")
-            .doc(child)
-            .delete();
-        }
+        this.linkToItem(skill.itemLink, i, items, skills);
       }
     }
-    for (id of toDelete) {
-      delete skills[id];
+
+    for (let i of rootSkills) {
+      this.updateSkillLabels(skills, i, skills[i].name);
     }
 
     for (let i in skills) {
       let skill = skills[i];
-
-      let newParents = [];
-      for (parent of skill.parents) {
-        if (skills[parent] !== undefined) {
-          newParents.push(parent);
-        }
+      if (beginningSnapshot[i] == JSON.stringify(skill)) {
+        continue;
       }
-      skill.parents = newParents;
-
-      let newChildren = [];
-      for (child of skill.children) {
-        if (skills[child] !== undefined) {
-          newChildren.push(child);
-        }
-      }
-      skill.children = newChildren;
-    }
-
-    for (let i in skills) {
-      let skill = skills[i];
       app
         .firestore()
         .collection("skills")
         .doc(i)
-        .set(
-          {
-            children: skill.children,
-            parents: skill.parents
-          },
-          { merge: true }
-        );
+        .set(skill);
     }
+  };
+
+  getAllChildItems = (items, id) => {
+    let item = items[id];
+    let children = [id];
+    if (item.subtypes !== undefined) {
+      for (let child of item.subtypes) {
+        children.push(...this.getAllChildItems(items, child));
+      }
+    }
+    return children;
   };
 
   setTraitsRecursively = (items, id, parent = {}) => {
     let item = items[id];
     let subtypes = [...item.subtypes];
     let q = 0;
-    item.varietyType = item.baseVarietyType || parent.varietyType || null;
+    item.varietyType =
+      item.varietyType || item.baseVarietyType || parent.varietyType || null;
+
+    if (item.varietyType !== null) {
+      item.possibleVarieties = this.getAllChildItems(items, item.varietyType);
+    }
+
+    item.derivedValue =
+      item.derivedValue || item.value || parent.derivedValue || 0;
     for (let i in parent.traits || {}) {
       item.traits[i] = parent.traits[i];
     }
     for (let i in item.baseTraits || {}) {
       item.traits[i] = item.baseTraits[i];
+    }
+    for (let i in parent.defaultStates || {}) {
+      item.defaultStates[i] = parent.defaultStates[i];
+    }
+    for (let i in item.baseDefaultStates || []) {
+      let state = item.baseDefaultStates[i];
+      item.defaultStates[state.name] = state.defaultValues;
     }
     for (let child of subtypes) {
       q = Math.max(q, this.setTraitsRecursively(items, child, item) + 1);
@@ -143,6 +185,32 @@ export default class Main extends React.Component {
     }
     items[id].minq = q;
     return q;
+  };
+
+  updateActionRequirements = items => {
+    var actions = GetCollection("actions");
+    for (var index in actions) {
+      const i = index;
+      let action = actions[i];
+      let matchingIds = {};
+      let needsIdMatch = false;
+      for (let id in action.costs) {
+        needsIdMatch = true;
+        matchingIds[id] = this.getAllChildItems(items, id);
+      }
+      for (let id in action.requirements) {
+        needsIdMatch = true;
+        matchingIds[id] = this.getAllChildItems(items, id);
+      }
+      if (!needsIdMatch) {
+        continue;
+      }
+      app
+        .firestore()
+        .collection("actions")
+        .doc(i)
+        .set({ matchingIds }, { merge: true });
+    }
   };
 
   deriveTraits = () => {
@@ -159,6 +227,11 @@ export default class Main extends React.Component {
         item.id = i;
         item.minq = -1;
         item.traits = {};
+        item.defaultStates = {};
+        item.plural = item.pluralOverride || item.name + "s";
+        item.derivedValue = 0;
+        item.varietyType = undefined;
+        item.possibleVarieties = [];
         alchemyItems.push(item);
       }
     }
@@ -167,6 +240,9 @@ export default class Main extends React.Component {
         if (items[parent] == undefined) {
           console.log(item.name, parent);
           continue;
+        }
+        if (items[parent].subtypes == undefined) {
+          items[parent].subtypes = [];
         }
         items[parent].subtypes.push(item.id);
       }
@@ -179,6 +255,8 @@ export default class Main extends React.Component {
     }
 
     this.updateSkillsFromItems(items);
+
+    this.updateActionRequirements(items);
 
     for (var item of alchemyItems) {
       if (beginningSnapshot[item.id] == JSON.stringify(items[item.id])) {
@@ -194,7 +272,11 @@ export default class Main extends React.Component {
             isAlchemical: true,
             subtypes: item.subtypes,
             varietyType: item.varietyType,
-            traits: item.traits
+            traits: item.traits,
+            plural: item.plural,
+            defaultStates: item.defaultStates,
+            derivedVallue: item.derivedValue,
+            possibleVarieties: item.possibleVarieties
           },
           { merge: true }
         );

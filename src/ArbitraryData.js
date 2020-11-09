@@ -12,7 +12,7 @@ export default class ArbitraryData extends React.Component {
       ready: false,
       id: null,
       revision: 0,
-      collapsed: {}
+      collapsed: { VqcpyIT7MZNAralTKGt1: true, VT7g2nD1mILf0eIvamkA: true }
     };
   }
 
@@ -292,7 +292,7 @@ export default class ArbitraryData extends React.Component {
 
   renderData = () => {
     var data = GetCollection(this.props.datatype);
-    if (false && this.props.datatype == "skills") {
+    if (this.props.datatype == "skills") {
       return (
         <SkillDisplay
           skills={data}
@@ -334,7 +334,7 @@ export default class ArbitraryData extends React.Component {
     for (var c in data.costs) {
       var item = GetCollection("items")[c];
       if (item === undefined) continue;
-      cost += data.costs[c] * (item.value || 0);
+      cost += data.costs[c] * (item.value || item.derivedValue || 0);
     }
     var SKILL_VALUE = 144;
     for (var i in data.results) {
@@ -343,12 +343,12 @@ export default class ArbitraryData extends React.Component {
       for (var id in result.items) {
         var item = GetCollection("items")[id];
         if (item === undefined) continue;
-        r += result.items[id] * item.value || 0;
+        r += result.items[id] * item.value || item.derivedValue || 0;
       }
       for (var id in result.items) {
         var item = GetCollection("items")[id];
         if (item === undefined) continue;
-        r += result.items[id] * item.value || 0;
+        r += result.items[id] * item.value || item.derivedValue || 0;
       }
       for (var id in result.skills) {
         r += result.skills[id] * SKILL_VALUE;
@@ -600,6 +600,15 @@ export default class ArbitraryData extends React.Component {
                 }
               >
                 Delete
+              </button>
+              <button
+                onClick={() =>
+                  this.setState({
+                    id: null
+                  })
+                }
+              >
+                Copy
               </button>
             </div>
           )}
