@@ -8,8 +8,7 @@ export const templates = {
     name: "string",
     text: "longstring",
     actions: "!actions array",
-    cardset: "?!locations",
-    items: "!items array"
+    cardset: "?!locations"
   },
   actions: {
     name: "string",
@@ -42,7 +41,13 @@ export const templates = {
   },
   req: {
     min: "number",
-    max: "?number"
+    max: "?number",
+    traitMatch: "traitMatch"
+  },
+  traitMatch: {
+    trait: "string",
+    comparer: "string",
+    value: "string"
   },
   items: {
     name: "string",
