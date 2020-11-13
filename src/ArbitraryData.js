@@ -17,9 +17,10 @@ export default class ArbitraryData extends React.Component {
   }
 
   componentDidMount() {
+    let datatype = this.state.overrideDatatype || this.props.datatype;
     WhenReady(() =>
       this.setState({
-        data: this.genDefaultData(this.props.datatype, []),
+        data: this.genDefaultData(datatype, []),
         ready: true
       })
     );
@@ -272,27 +273,48 @@ export default class ArbitraryData extends React.Component {
       var collection = GetCollection(dt);
       var options = [];
       for (var id in collection) {
-        options.push(
-          <option value={id} key={id}>
-            {collection[id].name || id}
-          </option>
-        );
+        let label =
+          collection[id].name ||
+          (collection[id].text
+            ? collection[id].text.substring(0, 50) + "..."
+            : null) ||
+          id;
+        options.push({ id, label });
       }
+      options.sort((a, b) => a.label.localeCompare(b.label));
       return (
-        <select
-          value={data}
-          onChange={e => this.setStatePath(e.target.value, dataPath, isKey)}
-        >
-          {options}
-        </select>
+        <span>
+          <select
+            value={data}
+            onChange={e => this.setStatePath(e.target.value, dataPath, isKey)}
+          >
+            {options.map(option => (
+              <option value={option.id} key={option.id}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => {
+              this.setState({
+                overrideDatatype: dt,
+                id: data,
+                data: GetCollection(dt)[data]
+              });
+            }}
+          >
+            {">"}
+          </button>
+        </span>
       );
     }
     return datatype;
   }
 
   renderData = () => {
-    var data = GetCollection(this.props.datatype);
-    if (this.props.datatype == "skills") {
+    let datatype = this.state.overrideDatatype || this.props.datatype;
+    var data = GetCollection(datatype);
+    if (datatype == "skills") {
       return (
         <SkillDisplay
           skills={data}
@@ -318,7 +340,9 @@ export default class ArbitraryData extends React.Component {
           key={id}
           onClick={() => this.setState({ data: data[cid], id: cid })}
         >
-          {data[id].name || id}
+          {data[id].name ||
+            (data[id].text ? data[id].text.substring(0, 20) + "..." : null) ||
+            id}
         </button>
       );
     }
@@ -525,7 +549,9 @@ export default class ArbitraryData extends React.Component {
   };
 
   renderItemTree = () => {
-    let items = GetCollection(this.props.datatype);
+    let items = GetCollection(
+      this.state.overrideDatatype || this.props.datatype
+    );
     let baseItem = "Payc5snfnDmOqQTeJ502";
     return (
       <div style={{ position: "relative", left: 0, right: 0 }}>
@@ -535,6 +561,7 @@ export default class ArbitraryData extends React.Component {
   };
 
   render() {
+    let datatype = this.state.overrideDatatype || this.props.datatype;
     if (!this.state.ready) {
       return null;
     }
@@ -544,12 +571,10 @@ export default class ArbitraryData extends React.Component {
         {this.renderData()}
         <b>
           {this.state.id == null ? "Adding to " : "Editing item in "}
-          {this.props.datatype}:
+          {datatype}:
         </b>
-        {this.renderElement(this.props.datatype, [])}
-        <b>
-          {this.props.datatype === "actions" ? this.renderActionRec() : null}
-        </b>
+        {this.renderElement(datatype, [])}
+        <b>{datatype === "actions" ? this.renderActionRec() : null}</b>
         <div>{this.state.id}</div>
         <div>{JSON.stringify(this.state.data)}</div>
         <br />
@@ -559,7 +584,7 @@ export default class ArbitraryData extends React.Component {
               onClick={() =>
                 app
                   .firestore()
-                  .collection(this.props.datatype)
+                  .collection(datatype)
                   .add(dataObj)
               }
             >
@@ -571,12 +596,12 @@ export default class ArbitraryData extends React.Component {
                 onClick={() =>
                   app
                     .firestore()
-                    .collection(this.props.datatype)
+                    .collection(datatype)
                     .doc(this.state.id)
                     .set(dataObj)
                     .then(() =>
                       this.setState({
-                        data: this.genDefaultData(this.props.datatype, []),
+                        data: this.genDefaultData(datatype, []),
                         id: null
                       })
                     )
@@ -588,12 +613,12 @@ export default class ArbitraryData extends React.Component {
                 onClick={() =>
                   app
                     .firestore()
-                    .collection(this.props.datatype)
+                    .collection(datatype)
                     .doc(this.state.id)
                     .delete()
                     .then(() =>
                       this.setState({
-                        data: this.genDefaultData(this.props.datatype, []),
+                        data: this.genDefaultData(datatype, []),
                         id: null
                       })
                     )
@@ -613,7 +638,7 @@ export default class ArbitraryData extends React.Component {
             </div>
           )}
         </div>
-        {this.props.datatype === "items" ? this.renderItemTree() : null}
+        {datatype === "items" ? this.renderItemTree() : null}
       </div>
     );
   }

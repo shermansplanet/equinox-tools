@@ -217,14 +217,14 @@ export default class Main extends React.Component {
     var alchemyItems = [];
     var items = GetCollection("items");
     let beginningSnapshot = {};
-
+    let otherItems = [];
     let baseItem = "Payc5snfnDmOqQTeJ502";
     for (var i in items) {
       let item = items[i];
+      item.id = i;
       if ((item.is !== undefined && item.is.length > 0) || i == baseItem) {
         beginningSnapshot[i] = JSON.stringify(item);
         item.subtypes = [];
-        item.id = i;
         item.minq = -1;
         item.traits = {};
         item.defaultStates = {};
@@ -233,6 +233,8 @@ export default class Main extends React.Component {
         item.varietyType = undefined;
         item.possibleVarieties = [];
         alchemyItems.push(item);
+      } else {
+        otherItems.push(item);
       }
     }
     for (var item of alchemyItems) {
@@ -275,8 +277,21 @@ export default class Main extends React.Component {
             traits: item.traits,
             plural: item.plural,
             defaultStates: item.defaultStates,
-            derivedVallue: item.derivedValue,
+            derivedValue: item.derivedValue,
             possibleVarieties: item.possibleVarieties
+          },
+          { merge: true }
+        );
+    }
+
+    for (var item of otherItems) {
+      app
+        .firestore()
+        .collection("items")
+        .doc(item.id)
+        .set(
+          {
+            plural: item.pluralOverride || item.name + "s"
           },
           { merge: true }
         );
