@@ -303,7 +303,7 @@ export default class ArbitraryData extends React.Component {
               });
             }}
           >
-            {">"}
+            {"edit"}
           </button>
         </span>
       );
@@ -334,6 +334,10 @@ export default class ArbitraryData extends React.Component {
       const cid = id;
       if (id.startsWith("checkpoint") || data[id].isAlchemical) {
         continue;
+      }
+
+      if (data[id].text && data[id].text.toLowerCase().includes("sun")) {
+        items.push("N THE SUN THE SUN THE SUN TH");
       }
       items.push(
         <button

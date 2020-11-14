@@ -27,7 +27,8 @@ export function Init() {
     db.collection(collectionLabel).onSnapshot(snap => {
       collectionList[collectionLabel] = {};
       for (var doc of snap.docs) {
-        collectionList[collectionLabel][doc.id] = doc.data();
+        let data = doc.data();
+        collectionList[collectionLabel][doc.id] = data;
       }
       ready++;
       if (ready == collectionLabels.length) {
