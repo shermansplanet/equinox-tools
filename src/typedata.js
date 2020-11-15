@@ -38,7 +38,13 @@ export const templates = {
     text: "longstring",
     location: "?!locations",
     skills: "!skills number dict",
-    items: "!items number dict"
+    items: "!items number dict",
+    specificItems: "specificItem array"
+  },
+  specificItem: {
+    item: "!items",
+    traits: "string string dict",
+    count: "number"
   },
   req: {
     min: "number",

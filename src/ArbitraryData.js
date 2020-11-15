@@ -282,11 +282,23 @@ export default class ArbitraryData extends React.Component {
         options.push({ id, label });
       }
       options.sort((a, b) => a.label.localeCompare(b.label));
+      let variety = null;
+      if (dt == "items" && data.includes("$")) {
+        let bits = data.split("$");
+        data = bits[0];
+        variety = bits[1];
+      }
       return (
         <span>
           <select
             value={data}
-            onChange={e => this.setStatePath(e.target.value, dataPath, isKey)}
+            onChange={e =>
+              this.setStatePath(
+                e.target.value + (variety == null ? "" : `\$${variety}`),
+                dataPath,
+                isKey
+              )
+            }
           >
             {options.map(option => (
               <option value={option.id} key={option.id}>
@@ -294,6 +306,44 @@ export default class ArbitraryData extends React.Component {
               </option>
             ))}
           </select>
+          {dt != "items" ? null : (
+            <span>
+              <input
+                type="checkbox"
+                checked={variety != null}
+                onChange={e => {
+                  if (e.target.checked) {
+                    this.setStatePath(
+                      data + "$" + this.genDefaultData(datatype),
+                      dataPath,
+                      isKey
+                    );
+                  } else {
+                    this.setStatePath(data, dataPath, isKey);
+                  }
+                }}
+              />
+
+              {variety == null ? null : (
+                <select
+                  value={variety}
+                  onChange={e =>
+                    this.setStatePath(
+                      data + "$" + e.target.value,
+                      dataPath,
+                      isKey
+                    )
+                  }
+                >
+                  {options.map(option => (
+                    <option value={option.id} key={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </span>
+          )}
           <button
             onClick={() => {
               this.setState({
@@ -353,6 +403,22 @@ export default class ArbitraryData extends React.Component {
     return <div style={{ margin: "12px" }}>{items}</div>;
   };
 
+  getValue = id => {
+    let coeff = 1;
+    if (id.includes("$")) {
+      let bits = id.split("$");
+      id = bits[1];
+      coeff = this.getValue(bits[0]);
+    }
+    var item = GetCollection("items")[id];
+    if (item === undefined) {
+      return 0;
+    }
+    let cost = coeff * (item.value || item.derivedValue || 0);
+    console.log(id, cost);
+    return cost;
+  };
+
   renderActionRec = () => {
     var data = this.state.data;
     var cost = 0;
@@ -360,23 +426,17 @@ export default class ArbitraryData extends React.Component {
     var consequence = 0;
     var hasCheck = data.check !== undefined;
     for (var c in data.costs) {
-      var item = GetCollection("items")[c];
-      if (item === undefined) continue;
-      cost += data.costs[c] * (item.value || item.derivedValue || 0);
+      cost += data.costs[c] * this.getValue(c);
     }
     var SKILL_VALUE = 144;
     for (var i in data.results) {
       var r = 0;
       var result = data.results[i];
-      for (var id in result.items) {
-        var item = GetCollection("items")[id];
-        if (item === undefined) continue;
-        r += result.items[id] * item.value || item.derivedValue || 0;
+      for (var specific of result.specificItems || []) {
+        r += specific.count * this.getValue(specific.item);
       }
       for (var id in result.items) {
-        var item = GetCollection("items")[id];
-        if (item === undefined) continue;
-        r += result.items[id] * item.value || item.derivedValue || 0;
+        r += result.items[id] * this.getValue(id);
       }
       for (var id in result.skills) {
         r += result.skills[id] * SKILL_VALUE;
@@ -420,9 +480,9 @@ export default class ArbitraryData extends React.Component {
     if (items[id] == undefined) {
       return;
     }
-    let level = Math.log10(items[id].minq + 1);
-    let offset = level * 150;
-    let depth = Math.round(level * 5) - 100;
+    let level = Math.log2(items[id].minq + 1);
+    let offset = level * 20;
+    let depth = Math.round(level * 16) - 1000;
     if (depth == NaN) {
       console.log(items[id].name);
     }

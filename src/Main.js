@@ -251,9 +251,9 @@ export default class Main extends React.Component {
     }
 
     let baseq = this.setTraitsRecursively(items, baseItem);
-    const maxq = 5;
+    const maxq = 50;
     for (var item of alchemyItems) {
-      item.minq = Math.ceil(Math.pow(10, (item.minq * maxq) / baseq)) - 1;
+      item.minq = Math.ceil(Math.pow(2, (item.minq * maxq) / baseq)) - 1;
     }
 
     this.updateSkillsFromItems(items);
