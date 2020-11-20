@@ -9,7 +9,8 @@ export const templates = {
     text: "longstring",
     actions: "!actions array",
     cardset: "?!locations",
-    markets: "!markets array"
+    markets: "!markets array",
+    image: "?string"
   },
   actions: {
     name: "string",
@@ -28,7 +29,8 @@ export const templates = {
   flags: {
     nextSemester: "?bool",
     locationOverride: "?!locations",
-    noResultScreen: "?bool"
+    noResultScreen: "?bool",
+    multiItem: "?bool"
   },
   check: {
     difficulty: "number",

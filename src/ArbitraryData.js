@@ -385,10 +385,6 @@ export default class ArbitraryData extends React.Component {
       if (id.startsWith("checkpoint") || data[id].isAlchemical) {
         continue;
       }
-
-      if (data[id].text && data[id].text.toLowerCase().includes("sun")) {
-        items.push("N THE SUN THE SUN THE SUN TH");
-      }
       items.push(
         <button
           key={id}
@@ -480,9 +476,9 @@ export default class ArbitraryData extends React.Component {
     if (items[id] == undefined) {
       return;
     }
-    let level = Math.log2(items[id].minq + 1);
-    let offset = level * 20;
-    let depth = Math.round(level * 16) - 1000;
+    let level = Math.log(items[id].minq + 1) / Math.log(1.5);
+    let offset = level * 30;
+    let depth = Math.round(level) - 2000;
     if (depth == NaN) {
       console.log(items[id].name);
     }
@@ -509,8 +505,8 @@ export default class ArbitraryData extends React.Component {
             <div
               style={{
                 position: "absolute",
-                width: "1000px",
-                marginLeft: "-990px",
+                width: "2000px",
+                marginLeft: "-1990px",
                 height: "100%",
                 backgroundColor: "white",
                 alignSelf: "center",
@@ -520,8 +516,8 @@ export default class ArbitraryData extends React.Component {
             <div
               style={{
                 position: "absolute",
-                width: "1000px",
-                marginLeft: "-990px",
+                width: "2000px",
+                marginLeft: "-1990px",
                 height: "2px",
                 backgroundColor: "black",
                 alignSelf: "center",
@@ -657,6 +653,7 @@ export default class ArbitraryData extends React.Component {
           ) : (
             <div>
               <button
+                style={{ color: "#800" }}
                 onClick={() =>
                   app
                     .firestore()
@@ -671,7 +668,7 @@ export default class ArbitraryData extends React.Component {
                     )
                 }
               >
-                Update
+                Overwrite
               </button>
               <button
                 onClick={() =>

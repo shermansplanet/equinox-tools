@@ -84,6 +84,9 @@ export default class Main extends React.Component {
     } else if (skill.label != parentLabel) {
       skill.label = "skill";
     }
+    if (skill.name == "pencils") {
+      console.log(skill, parentLabel);
+    }
     for (let child of skill.children) {
       this.updateSkillLabels(skills, child, skill.label);
     }
@@ -118,8 +121,20 @@ export default class Main extends React.Component {
 
     for (let i in skills) {
       let skill = skills[i];
-      if (skill.itemLink) {
+      if (skill.itemLink !== undefined) {
         this.linkToItem(skill.itemLink, i, items, skills);
+      }
+    }
+
+    for (let i in skills) {
+      for (let parent of skills[i].parents) {
+        if (skills[parent] == undefined) {
+          continue;
+        }
+        if (skills[parent].children.includes(i)) {
+          continue;
+        }
+        skills[parent].children.push(i);
       }
     }
 
@@ -240,7 +255,6 @@ export default class Main extends React.Component {
     for (var item of alchemyItems) {
       for (var parent of item.is) {
         if (items[parent] == undefined) {
-          console.log(item.name, parent);
           continue;
         }
         if (items[parent].subtypes == undefined) {
@@ -251,9 +265,9 @@ export default class Main extends React.Component {
     }
 
     let baseq = this.setTraitsRecursively(items, baseItem);
-    const maxq = 50;
+    const maxq = 42;
     for (var item of alchemyItems) {
-      item.minq = Math.ceil(Math.pow(2, (item.minq * maxq) / baseq)) - 1;
+      item.minq = Math.ceil(Math.pow(1.5, (item.minq * maxq) / baseq)) - 1;
     }
 
     this.updateSkillsFromItems(items);
