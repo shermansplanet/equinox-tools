@@ -3,6 +3,7 @@ import app from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import ArbitraryData from "./ArbitraryData";
+import Votes from "./Votes";
 import { Init, GetCollection } from "./dataGet";
 
 export default class Main extends React.Component {
@@ -177,8 +178,12 @@ export default class Main extends React.Component {
       item.possibleVarieties = this.getAllChildItems(items, item.varietyType);
     }
 
+    let baseValue = item.value;
+    if (baseValue >= 1) {
+      baseValue *= 5;
+    }
     item.derivedValue =
-      item.derivedValue || item.value || parent.derivedValue || 0;
+      item.derivedValue || baseValue || parent.derivedValue || 0;
     for (let i in parent.traits || {}) {
       item.traits[i] = parent.traits[i];
     }
@@ -314,12 +319,15 @@ export default class Main extends React.Component {
 
   render() {
     if (this.state.authUser != null) {
-      var content = (
-        <ArbitraryData
-          key={this.state.currentTab}
-          datatype={this.state.currentTab}
-        />
-      );
+      var content =
+        this.state.currentTab == "votes" ? (
+          <Votes />
+        ) : (
+          <ArbitraryData
+            key={this.state.currentTab}
+            datatype={this.state.currentTab}
+          />
+        );
       return (
         <div>
           <button onClick={() => this.setState({ currentTab: "skills" })}>
@@ -336,6 +344,9 @@ export default class Main extends React.Component {
           </button>
           <button onClick={() => this.setState({ currentTab: "markets" })}>
             MARKETS
+          </button>
+          <button onClick={() => this.setState({ currentTab: "votes" })}>
+            VOTES
           </button>
           {content}
           <button onClick={this.deriveTraits}>Derive Traits</button>

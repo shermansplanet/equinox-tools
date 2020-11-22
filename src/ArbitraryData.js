@@ -385,8 +385,20 @@ export default class ArbitraryData extends React.Component {
       if (id.startsWith("checkpoint") || data[id].isAlchemical) {
         continue;
       }
+      let style = {
+        border: "1px solid #555",
+        borderRadius: "4px",
+        padding: "2px 6px"
+      };
+      if (datatype == "actions") {
+        let minutes = data[id].minutes || 0;
+        style.backgroundColor =
+          minutes < 60 ? "#fff" : minutes < 120 ? "#ffa" : "#faa";
+      }
       items.push(
         <button
+          style={style}
+          className="displayButton"
           key={id}
           onClick={() => this.setState({ data: data[cid], id: cid })}
         >
@@ -410,8 +422,7 @@ export default class ArbitraryData extends React.Component {
     if (item === undefined) {
       return 0;
     }
-    let cost = coeff * (item.value || item.derivedValue || 0);
-    console.log(id, cost);
+    let cost = coeff * (item.derivedValue || item.value || 0);
     return cost;
   };
 
@@ -443,6 +454,9 @@ export default class ArbitraryData extends React.Component {
         reward += r;
       }
     }
+    cost /= 5;
+    reward /= 5;
+    consequence /= 5;
     var t = reward * 1.05 - cost * 0.95;
     if (hasCheck) {
       var difficulty = data.check.difficulty;

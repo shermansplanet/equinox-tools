@@ -41,7 +41,8 @@ export const templates = {
     location: "?!locations",
     skills: "!skills number dict",
     items: "!items number dict",
-    specificItems: "specificItem array"
+    specificItems: "specificItem array",
+    actions: "!actions array"
   },
   specificItem: {
     item: "!items",
@@ -51,7 +52,8 @@ export const templates = {
   req: {
     min: "number",
     max: "?number",
-    traitMatch: "traitMatch array"
+    traitMatch: "traitMatch array",
+    invert: "?bool"
   },
   traitMatch: {
     trait: "string",

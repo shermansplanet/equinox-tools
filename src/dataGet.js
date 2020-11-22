@@ -3,7 +3,14 @@ import "firebase/firestore";
 
 var collectionList = {};
 var isReady = false;
-const collectionLabels = ["actions", "locations", "items", "skills", "markets"];
+const collectionLabels = [
+  "actions",
+  "locations",
+  "items",
+  "skills",
+  "markets",
+  "votes"
+];
 var callbacks = [];
 var subscriptions = [];
 
@@ -53,4 +60,22 @@ export function Init() {
 
 export function GetCollection(collection) {
   return collectionList[collection];
+}
+
+export function GetTraits(raw) {
+  let item = {};
+  let parts = raw.split("&");
+  item.id = parts[0];
+  for (let i = 1; i < parts.length; i++) {
+    let keyval = parts[i].split("=");
+    if (keyval[1] === "undefined") {
+      continue;
+    }
+    let val = JSON.parse(keyval[1]);
+    if (!isNaN(val)) {
+      val = parseFloat(val);
+    }
+    item[keyval[0]] = val;
+  }
+  return item;
 }
