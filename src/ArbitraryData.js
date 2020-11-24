@@ -48,7 +48,7 @@ export default class ArbitraryData extends React.Component {
     if (datatype == "bool") {
       return true;
     }
-    if (datatype == "number") {
+    if (datatype == "number" || datatype == "modnumber") {
       return 0;
     }
     if (datatype[0] == "!") {
@@ -233,6 +233,46 @@ export default class ArbitraryData extends React.Component {
             this.setStatePath(parseFloat(e.target.value), dataPath, isKey)
           }
         />
+      );
+    }
+    if (datatype === "modnumber") {
+      let first = "";
+      let val = data;
+      if (data != undefined) {
+        if (isNaN(parseFloat(data))) {
+          first = data.substring(0, 1);
+          val = parseFloat(data.substring(1));
+        } else {
+          val = parseFloat(data);
+        }
+      }
+      return (
+        <span key={dataPath}>
+          <select
+            value={first}
+            onChange={e =>
+              this.setStatePath(e.target.value + val, dataPath, isKey)
+            }
+          >
+            <option key="+" value="">
+              +
+            </option>
+            <option key="x" value="x">
+              x
+            </option>
+            <option key="=" value="=">
+              =
+            </option>
+          </select>
+          <input
+            type="number"
+            value={data === undefined ? "" : data}
+            className={"data_" + datatype}
+            onChange={e =>
+              this.setStatePath(first + e.target.value, dataPath, isKey)
+            }
+          />
+        </span>
       );
     }
     if (datatype[0] == "?") {
