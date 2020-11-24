@@ -266,7 +266,7 @@ export default class ArbitraryData extends React.Component {
           </select>
           <input
             type="number"
-            value={data === undefined ? "" : data}
+            value={data === undefined ? "" : val}
             className={"data_" + datatype}
             onChange={e =>
               this.setStatePath(first + e.target.value, dataPath, isKey)
