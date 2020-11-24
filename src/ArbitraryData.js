@@ -10,6 +10,7 @@ export default class ArbitraryData extends React.Component {
     super(props);
     this.state = {
       ready: false,
+      loading: false,
       id: null,
       revision: 0,
       collapsed: { VqcpyIT7MZNAralTKGt1: true, VT7g2nD1mILf0eIvamkA: true }
@@ -435,7 +436,7 @@ export default class ArbitraryData extends React.Component {
     for (var c in data.costs) {
       cost += data.costs[c] * this.getValue(c);
     }
-    var SKILL_VALUE = 144;
+    var SKILL_VALUE = 144 * 5;
     for (var i in data.results) {
       var r = 0;
       var result = data.results[i];
@@ -655,20 +656,25 @@ export default class ArbitraryData extends React.Component {
         <div>
           {this.state.id === null ? (
             <button
-              onClick={() =>
+              disabled={this.state.loading}
+              onClick={() => {
+                this.setState({ loading: true });
                 app
                   .firestore()
                   .collection(datatype)
                   .add(dataObj)
-              }
+                  .then(() => this.setState({ loading: false }));
+              }}
             >
               Add
             </button>
           ) : (
             <div>
               <button
+                disabled={this.state.loading}
                 style={{ color: "#800" }}
-                onClick={() =>
+                onClick={() => {
+                  this.setState({ loading: true });
                   app
                     .firestore()
                     .collection(datatype)
@@ -676,15 +682,15 @@ export default class ArbitraryData extends React.Component {
                     .set(dataObj)
                     .then(() =>
                       this.setState({
-                        data: this.genDefaultData(datatype, []),
-                        id: null
+                        loading: false
                       })
-                    )
-                }
+                    );
+                }}
               >
                 Overwrite
               </button>
               <button
+                disabled={this.state.loading}
                 onClick={() =>
                   app
                     .firestore()
@@ -702,6 +708,7 @@ export default class ArbitraryData extends React.Component {
                 Delete
               </button>
               <button
+                disabled={this.state.loading}
                 onClick={() =>
                   this.setState({
                     id: null
