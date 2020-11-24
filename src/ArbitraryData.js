@@ -489,7 +489,11 @@ export default class ArbitraryData extends React.Component {
       for (var id in result.skills) {
         r += result.skills[id] * SKILL_VALUE;
       }
-      if (r < 0) {
+
+      if (result.isEither) {
+        consequence += r;
+        reward += r;
+      } else if (result.isFailure) {
         consequence += r;
       } else {
         reward += r;
