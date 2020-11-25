@@ -38,11 +38,14 @@ export const templates = {
   },
   result: {
     text: "longstring",
+    isFailure: "?bool",
+    isEither: "?bool",
     location: "?!locations",
     skills: "!skills number dict",
-    items: "!items number dict",
+    items: "!items modnumber dict",
     specificItems: "specificItem array",
     actions: "!actions array",
+    extraCopies: "number",
     actionLimit: "?number"
   },
   specificItem: {
