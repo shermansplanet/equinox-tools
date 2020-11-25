@@ -42,7 +42,8 @@ export const templates = {
     skills: "!skills number dict",
     items: "!items number dict",
     specificItems: "specificItem array",
-    actions: "!actions array"
+    actions: "!actions array",
+    actionLimit: "?number"
   },
   specificItem: {
     item: "!items",

@@ -263,6 +263,9 @@ export default class ArbitraryData extends React.Component {
             <option key="=" value="=">
               =
             </option>
+            <option key="$" value="$">
+              $
+            </option>
           </select>
           <input
             type="number"
@@ -477,6 +480,8 @@ export default class ArbitraryData extends React.Component {
       cost += data.costs[c] * this.getValue(c);
     }
     var SKILL_VALUE = 144 * 5;
+    let successCount = 0;
+    let failureCount = 0;
     for (var i in data.results) {
       var r = 0;
       var result = data.results[i];
@@ -493,15 +498,19 @@ export default class ArbitraryData extends React.Component {
       if (result.isEither) {
         consequence += r;
         reward += r;
+        successCount++;
+        failureCount++;
       } else if (result.isFailure) {
         consequence += r;
+        failureCount++;
       } else {
         reward += r;
+        successCount++;
       }
     }
     cost /= 5;
-    reward /= 5;
-    consequence /= 5;
+    reward /= 5 * successCount;
+    consequence /= 5 * failureCount;
     var t = reward * 1.05 - cost * 0.95;
     if (hasCheck) {
       var difficulty = data.check.difficulty;
