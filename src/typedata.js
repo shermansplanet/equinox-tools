@@ -30,10 +30,12 @@ export const templates = {
     nextSemester: "?bool",
     locationOverride: "?!locations",
     noResultScreen: "?bool",
-    multiItem: "?bool"
+    multiItem: "?bool",
+    skillLearnTime: "?number"
   },
   check: {
     difficulty: "number",
+    difficultyCoeffs: "!items number dict",
     skill: "!skills"
   },
   result: {
@@ -74,9 +76,11 @@ export const templates = {
     is: "!items array",
     hidden: "?bool",
     immobile: "?bool",
+    isProgress: "?bool",
     baseVarietyType: "?!items",
     baseTraits: "string string dict",
     baseDefaultStates: "state array",
+    timeToDouble: "?number",
     minq: "display"
   },
   state: {

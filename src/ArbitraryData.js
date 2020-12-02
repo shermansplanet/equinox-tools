@@ -495,17 +495,20 @@ export default class ArbitraryData extends React.Component {
         r += result.skills[id] * SKILL_VALUE;
       }
 
+      let n = 1 + (result.extraCopies || 0);
+      r *= n;
+
       if (result.isEither) {
         consequence += r;
         reward += r;
-        successCount++;
-        failureCount++;
+        successCount += n;
+        failureCount += n;
       } else if (result.isFailure) {
         consequence += r;
-        failureCount++;
+        failureCount += n;
       } else {
         reward += r;
-        successCount++;
+        successCount += n;
       }
     }
     cost /= 5;

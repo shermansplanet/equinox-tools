@@ -85,9 +85,6 @@ export default class Main extends React.Component {
     } else if (skill.label != parentLabel) {
       skill.label = "skill";
     }
-    if (skill.name == "pencils") {
-      console.log(skill, parentLabel);
-    }
     for (let child of skill.children) {
       this.updateSkillLabels(skills, child, skill.label);
     }
@@ -157,12 +154,21 @@ export default class Main extends React.Component {
   };
 
   getAllChildItems = (items, id) => {
+    let suffix = null;
+    if (id.includes("$")) {
+      let bits = id.split("$");
+      suffix = bits[1];
+      id = bits[0];
+    }
     let item = items[id];
     let children = [id];
     if (item.subtypes !== undefined) {
       for (let child of item.subtypes) {
         children.push(...this.getAllChildItems(items, child));
       }
+    }
+    if (suffix !== null) {
+      return children.map(child => child + "$" + suffix);
     }
     return children;
   };
@@ -282,6 +288,9 @@ export default class Main extends React.Component {
     for (var item of alchemyItems) {
       if (beginningSnapshot[item.id] == JSON.stringify(items[item.id])) {
         continue;
+      }
+      if (item.id == "X2HTB532t4kQlK1Ea7Wd") {
+        console.log(item.name);
       }
       app
         .firestore()
