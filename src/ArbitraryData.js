@@ -125,6 +125,18 @@ export default class ArbitraryData extends React.Component {
             >
               -
             </button>
+            {ci == 0 ? null : (
+              <button
+                onClick={() => {
+                  let temp = data[ci];
+                  data[ci] = data[ci - 1];
+                  data[ci - 1] = temp;
+                  this.setStatePath(data, dataPath);
+                }}
+              >
+                ^
+              </button>
+            )}
             {this.renderElement(dt, [...dataPath, ci])}
           </div>
         );
@@ -156,6 +168,9 @@ export default class ArbitraryData extends React.Component {
       var dt1 = datatype.split(" ")[0];
       var dt2 = datatype.split(" ")[1];
       for (var i in data) {
+        if (i.startsWith("silverworkTrait")) {
+          continue;
+        }
         const ci = i;
         elements.push(
           <div key={ci}>

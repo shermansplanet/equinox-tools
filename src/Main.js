@@ -162,6 +162,9 @@ export default class Main extends React.Component {
     }
     let item = items[id];
     let children = [id];
+    if (item == undefined) {
+      return children;
+    }
     if (item.subtypes !== undefined) {
       for (let child of item.subtypes) {
         children.push(...this.getAllChildItems(items, child));
@@ -218,24 +221,26 @@ export default class Main extends React.Component {
     for (var index in actions) {
       const i = index;
       let action = actions[i];
+      let beginningSnapshot = JSON.stringify(action);
       let matchingIds = {};
-      let needsIdMatch = false;
-      for (let id in action.costs) {
-        needsIdMatch = true;
+      for (let id in action.costs || {}) {
         matchingIds[id] = this.getAllChildItems(items, id);
       }
-      for (let id in action.requirements) {
-        needsIdMatch = true;
+      for (let id in action.silverReq || {}) {
+        action.requirements["silverworkTrait_" + id] = action.silverReq[id];
+      }
+      for (let id in action.requirements || {}) {
         matchingIds[id] = this.getAllChildItems(items, id);
       }
-      if (!needsIdMatch) {
+      action.matchingIds = matchingIds;
+      if (beginningSnapshot == JSON.stringify(action)) {
         continue;
       }
       app
         .firestore()
         .collection("actions")
         .doc(i)
-        .set({ matchingIds }, { merge: true });
+        .set(action, { merge: true });
     }
   };
 

@@ -20,6 +20,7 @@ export const templates = {
     results: "result array",
     hidden: "?bool",
     requirements: "!items req dict",
+    silverReq: "!items req dict",
     costs: "!items number dict",
     minutes: "?number",
     check: "?check",
