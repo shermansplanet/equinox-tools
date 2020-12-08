@@ -230,7 +230,17 @@ export default class Main extends React.Component {
         action.requirements["silverworkTrait_" + id] = action.silverReq[id];
       }
       for (let id in action.requirements || {}) {
-        matchingIds[id] = this.getAllChildItems(items, id);
+        matchingIds[id] = this.getAllChildItems(items, id).filter(itemId => {
+          for (let n of action.requirements[id].baseTraits || []) {
+            if (
+              items[itemId].baseTraits === undefined ||
+              items[itemId].baseTraits[n] === undefined
+            ) {
+              return false;
+            }
+          }
+          return true;
+        });
       }
       action.matchingIds = matchingIds;
       if (beginningSnapshot == JSON.stringify(action)) {

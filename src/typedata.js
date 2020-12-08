@@ -60,6 +60,7 @@ export const templates = {
     min: "number",
     max: "?number",
     traitMatch: "traitMatch array",
+    baseTraits: "string array",
     invert: "?bool"
   },
   traitMatch: {
